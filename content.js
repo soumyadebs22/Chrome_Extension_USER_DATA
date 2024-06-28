@@ -191,3 +191,55 @@ function logToBackground(message) {
       });
     });
   }
+  let lastScrollY = 0;
+  let scrollTimeout = null;
+  let startTime = null;
+  let focusedParagraph = null;
+  let focusedParagraphLocation = null;
+  let focusStartTime = 0;
+  
+  function checkFocus() {
+    let currentTime = new Date().getTime();
+    if (focusStartTime && (currentTime - focusStartTime > 20000)) { // 30 seconds
+      clearTimeout(scrollTimeout);
+      let paragraphs = document.getElementsByTagName("p");
+      for (let paragraph of paragraphs) {
+        let rect = paragraph.getBoundingClientRect();
+        if (rect.top < window.innerHeight && rect.bottom >= 0) {
+          focusedParagraph = paragraph.innerText;
+          focusedParagraphLocation = rect.top + window.scrollY;
+          console.log("Focused paragraph found:", focusedParagraph); // Debugging
+          break;
+        }
+      }
+      console.log("Focused paragraph:", focusedParagraph); // Debugging
+      console.log("Focused paragraph location:", focusedParagraphLocation); // Debugging
+      console.log("Focused paragraph duration:", currentTime - focusStartTime); // Debugging
+    }
+  }
+  
+  window.addEventListener('scroll', () => {
+    let currentScrollY = window.scrollY;
+    if (currentScrollY !== lastScrollY) {
+      lastScrollY = currentScrollY;
+      clearTimeout(scrollTimeout);
+      startTime = new Date().getTime();
+      focusStartTime = new Date().getTime();
+      scrollTimeout = setTimeout(checkFocus, 20000); // 30 seconds
+    }
+  });
+  
+  // Send the focused paragraph data to the popup
+  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === "getFocusedParagraph") {
+      let currentTime = new Date().getTime();
+      let focusDuration = currentTime - focusStartTime;
+      console.log("Sending focused paragraph:", focusedParagraph); // Debugging
+      sendResponse({
+        paragraph: focusedParagraph,
+        location: focusedParagraphLocation,
+        duration: focusDuration
+      });
+    }
+  });
+  

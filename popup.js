@@ -30,5 +30,27 @@ document.addEventListener('DOMContentLoaded', function () {
       document.getElementById('total-time').textContent = result.totalTime;
     });
   });
+
+  document.addEventListener('DOMContentLoaded', () => {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      chrome.tabs.sendMessage(tabs[0].id, { action: "getFocusedParagraph" }, (response) => {
+        if (response) {
+          document.getElementById('focused-paragraph').innerText = response.paragraph || "No paragraph focused yet.";
+          document.getElementById('focused-paragraph-location').innerText = response.location !== null ? `Location: ${response.location}px` : "Location: Not available";
+          document.getElementById('focused-paragraph-duration').innerText = `Duration: ${response.duration / 1000} seconds`;
+          console.log("Focused paragraph received:", response.paragraph); // Debugging
+          console.log("Focused paragraph location:", response.location); // Debugging
+          console.log("Focused paragraph duration:", response.duration); // Debugging
+        } else {
+          document.getElementById('focused-paragraph').innerText = "No paragraph focused yet.";
+          document.getElementById('focused-paragraph-location').innerText = "";
+          document.getElementById('focused-paragraph-duration').innerText = "";
+        }
+      });
+    });
+  });
+  
+  
+  
   
   

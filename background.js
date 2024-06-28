@@ -49,7 +49,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     .catch(error => console.error('Error:', error));
   }
   
-    // Clear every 2 minutes (120000 milliseconds)
+
   
   // Track time spent on entertainment websites
   let entertainmentTabs = {};
@@ -75,6 +75,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       delete entertainmentTabs[tabId];
     }
   });
+
+//focusdata
+  chrome.action.onClicked.addListener((tab) => {
+    chrome.scripting.executeScript({
+      target: {tabId: tab.id},
+      files: ['content.js']
+    });
+  });
+  
   
   // Function to clear stored data
   function clearData() {
@@ -84,4 +93,4 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
   
   // Set an interval to clear data every 2 minutes
-  setInterval(clearData, 120000);
+  setInterval(clearData, 60000);
