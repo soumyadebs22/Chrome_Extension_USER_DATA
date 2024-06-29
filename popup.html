@@ -18,23 +18,41 @@
       padding: 10px;
       border-radius: 5px;
     }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f4f4f4;
+    }
     #focused-paragraph {
-        margin-top: 10px;
-        padding: 10px;
-        border: 1px solid #ccc;
-        background: #f9f9f9;
-      }
+      margin-top: 10px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      background: #f9f9f9;
+    }
+    button {
+      padding: 10px;
+      font-size: 16px;
+      margin-top: 20px;
+    }
   </style>
 </head>
 <body>
   <h1>User Activity Data</h1>
-  <div id="dataContainer">
-  </div>
+  <div id="dataContainer"></div>
   <h2><b>Entertainment Time Tracker</b></h2>
   <p><b>Total time spent:</b> <span id="total-time">0</span> seconds</p>
   <h1>Focus Tracker</h1>
-    <div id="focused-paragraph">Loadung..</div>
-    <div id="focused-paragraph-location"></div>
+  <div id="focused-paragraph">Loading...</div>
+  <div id="focused-paragraph-location"></div>
+  <button id="download-csv">Download CSV</button>
   <script src="popup.js"></script>
 </body>
 </html>
