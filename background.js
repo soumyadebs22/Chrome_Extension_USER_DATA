@@ -17,7 +17,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   
   // Function to send data to the language model for summarization
   function sendToLLM(clickData, websiteTimeData, typingData, scrollData, hoverData) {
-    const apiKey = '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';
+    const apiKey = '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';
     const prompt = "Summarize the following user activity data:\n\n";
     const clickText = clickData.map(item => `Clicked URL: ${item.link} at ${item.timestamp}`).join('\n');
     const timeText = websiteTimeData.map(item => `Spent ${item.timeSpent} ms on URL: ${item.url} at ${item.timestamp}`).join('\n');
@@ -28,26 +28,32 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   
     console.log('Input to LLM:', inputText);  // Log the input to the LLM
   
-    fetch('https://api-inference.huggingface.co/models/facebook/bart-large-cnn', {
+    fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        inputs: inputText,
+        model: 'mixtral-8x7b-32768',  // Replace with the correct model name if different
+        messages: [{role: 'user', content: inputText}],
+        max_tokens: 150,  // Adjust this value as needed
+        n: 1,
+        stop: null,
+        temperature: 0.7
       }),
     })
     .then(response => response.json())
     .then(summary => {
-      if (Array.isArray(summary) && summary.length > 0 && summary[0].summary_text) {
-        console.log('Summary:', summary[0].summary_text);
+      if (summary.choices && summary.choices.length > 0 && summary.choices[0].message.content) {
+        console.log('%cSummary of Data using LLM:', 'font-weight: bold', summary.choices[0].message.content);
       } else {
         console.log('Unexpected response format:', summary);
       }
     })
     .catch(error => console.error('Error:', error));
   }
+  
   
 
   
