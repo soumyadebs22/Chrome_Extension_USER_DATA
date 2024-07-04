@@ -1,11 +1,12 @@
 document.addEventListener('DOMContentLoaded', function () {
   // Get data from Chrome storage and display it
-  chrome.storage.local.get(['hoverData', 'clickData', 'typingData', 'scrollData', 'websiteTimeData'], (result) => {
+  chrome.storage.local.get(['hoverData', 'clickData', 'typingData', 'scrollData', 'websiteTimeData', 'readingSpeedData'], (result) => {
     const hoverData = result.hoverData || [];
     const clickData = result.clickData || [];
     const typingData = result.typingData || [];
     const scrollData = result.scrollData || [];
     const websiteTimeData = result.websiteTimeData || [];
+    const readingSpeedData = result.readingSpeedData || { wps: 0 };
 
     // Format and display the data
     const dataContainer = document.getElementById('dataContainer');
@@ -20,6 +21,8 @@ document.addEventListener('DOMContentLoaded', function () {
       <table>${createTable(scrollData)}</table>
       <h2>Time Data</h2>
       <table>${createTable(websiteTimeData)}</table>
+      <h2>Reading Speed (Words per Second)</h2>
+      <p id="wps">${readingSpeedData.wps ? readingSpeedData.wps.toFixed(2) : '0.00'}</p>
     `;
 
     // Prepare data for CSV download
@@ -28,7 +31,8 @@ document.addEventListener('DOMContentLoaded', function () {
       clickData,
       typingData,
       scrollData,
-      websiteTimeData
+      websiteTimeData,
+      readingSpeedData
     };
 
     const csvContent = convertToCSV(csvData);
@@ -36,25 +40,52 @@ document.addEventListener('DOMContentLoaded', function () {
       downloadCSV(csvContent, 'data.csv');
     });
   });
+});
 
-  chrome.storage.local.get({ totalTime: 0 }, function (result) {
-    document.getElementById('total-time').textContent = result.totalTime;
-  });
 
-  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    chrome.tabs.sendMessage(tabs[0].id, { action: "getFocusedParagraph" }, (response) => {
-      if (response) {
-        document.getElementById('focused-paragraph').innerText = response.paragraph || "No paragraph focused yet.";
-        document.getElementById('focused-paragraph-location').innerText = response.location !== null ? `Location: ${response.location}px` : "Location: Not available";
-        console.log("Focused paragraph received:", response.paragraph); // Debugging
-        console.log("Focused paragraph location:", response.location); // Debugging
-      } else {
-        document.getElementById('focused-paragraph').innerText = "No paragraph focused yet.";
-        document.getElementById('focused-paragraph-location').innerText = "";
-      }
-    });
+//typing speed
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Fetch typing data from Chrome storage
+  chrome.storage.local.get(['typingData'], (result) => {
+    const typingData = result.typingData || [];
+    const typingSpeed = calculateTypingSpeed(typingData);
+    
+    // Display typing speed
+    if (typingSpeed !== null) {
+      document.getElementById('typingSpeed').innerText = `Typing Speed: ${typingSpeed} characters per minute`;
+    } else {
+      document.getElementById('typingSpeed').innerText = 'Typing speed not available.';
+    }
   });
 });
+
+function calculateTypingSpeed(typingData) {
+  console.log('Typing Data:', typingData);  // Check typingData content
+
+  if (typingData.length === 0) return null;
+
+  // Calculate total characters typed and total time spent typing
+  let totalCharacters = 0;
+  let totalTimeSpent = 0;
+
+  typingData.forEach(entry => {
+    totalCharacters += entry.text.length;
+    totalTimeSpent += entry.timeSpent;
+  });
+
+  // Calculate typing speed in characters per minute (CPM)
+  const elapsedTimeMinutes = totalTimeSpent / (1000 * 60); // Convert ms to minutes
+  const typingSpeed = Math.round(totalCharacters / elapsedTimeMinutes);
+
+  console.log('Typing Speed:', typingSpeed);  // Check calculated typing speed
+
+  return typingSpeed;
+}
+
+
+
+
 
 function createTable(data) {
   if (data.length === 0) return '<tr><td>No data available</td></tr>';

@@ -90,6 +90,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     });
   });
   
+//reading speed
+  chrome.runtime.onInstalled.addListener(() => {
+    chrome.storage.local.set({ totalTime: 0, readingSpeedData: { totalWords: 0, totalTime: 0, wps: 0 } });
+  });
+  
   
   // Function to clear stored data
   function clearData() {

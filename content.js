@@ -242,4 +242,36 @@ function logToBackground(message) {
       });
     }
   });
+
+  let paragraphStartTime = 0;
+  let totalWordsRead = 0;
+  let totalReadingTime = 0;
+  
+  function calculateReadingSpeed(paragraph, timeSpent) {
+    const wordCount = paragraph.innerText.split(/\s+/).length;
+    return wordCount / timeSpent; // words per second
+  }
+  
+  document.querySelectorAll('p').forEach(paragraph => {
+    paragraph.addEventListener('mouseenter', () => {
+      paragraphStartTime = Date.now();
+    });
+  
+    paragraph.addEventListener('mouseleave', () => {
+      const timeSpent = (Date.now() - paragraphStartTime) / 1000; // in seconds
+      if (timeSpent > 0) {
+        const readingSpeed = calculateReadingSpeed(paragraph, timeSpent);
+        totalWordsRead += paragraph.innerText.split(/\s+/).length;
+        totalReadingTime += timeSpent;
+  
+        chrome.storage.local.set({
+          readingSpeedData: {
+            totalWords: totalWordsRead,
+            totalTime: totalReadingTime,
+            wps: totalWordsRead / totalReadingTime // words per second
+          }
+        });
+      }
+    });
+  });
   
