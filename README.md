@@ -1,4 +1,4 @@
-# Chrome Extension USER_DATA
+# USER TRACKER Chrome Extension
 
 ## Overview
 
